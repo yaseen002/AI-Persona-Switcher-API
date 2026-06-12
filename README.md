@@ -1,6 +1,8 @@
 # AI Persona Switcher API
 A FastAPI service to dynamically switch between AI personas with isolated conversation history, configurable temperature, and strict prompt control with Session-based conversation history (store in memory dictionary)
 
+User → FastAPI Endpoint → Persona System Prompt → LLM API → Response → Session History
+
 ## 🚀 Quick Start
 1. `cp .env.example .env`
 2. Add your `GEMINI_API_KEY` to `.env`
