@@ -1,13 +1,9 @@
-# Environment & Secrets
-.env
 __pycache__/
-*.pyc
-.venv/
+*.py[cod]
+.env
 venv/
-
-# IDE
-.vscode/
-.idea/
-
-# Docker
-.docker/
+.venv/
+*.egg-info/
+dist/
+build/
+.DS_Store
