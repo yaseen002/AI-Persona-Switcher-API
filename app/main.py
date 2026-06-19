@@ -2,10 +2,10 @@ from fastapi import FastAPI, HTTPException
 from dotenv import load_dotenv
 import os
 
-# Ensure these import paths match your actual folder structure
 from app.models import ChatRequest, ChatResponse 
 from app.personas import PERSONA_REGISTRY
-from app.session_manager import get_history
+from app.session_manager import get_history, add_message, get_or_create_session
+from app.llm_service import generate_llm_response # <-- NEW IMPORT
 
 load_dotenv()
 
@@ -56,13 +56,52 @@ def get_session_history(session_id: str):
 
 @app.post("/chat/{persona_id}", response_model=ChatResponse)
 async def chat_with_persona(persona_id: str, request: ChatRequest):
-    """
-    Dummy endpoint to verify that FastAPI correctly validates 
-    the incoming ChatRequest and formats the outgoing ChatResponse.
-    """
+    
+    # 1. Validate Persona Exists
+    if persona_id not in PERSONA_REGISTRY:
+        raise HTTPException(status_code=404, detail=f"Persona '{persona_id}' not found.")
+    
+    persona_config = PERSONA_REGISTRY[persona_id]
+    
+    # 2. Handle Custom Persona Logic
+    if persona_id == "custom":
+        if not request.custom_prompt:
+            raise HTTPException(status_code=400, detail="custom_prompt is required for the 'custom' persona.")
+        system_prompt = request.custom_prompt
+    else:
+        system_prompt = persona_config["system_prompt"]
 
+    # 3. Get or Create Session
+    session_id = get_or_create_session(request.session_id, persona_id)
+    
+    # 4. Build the Messages Payload for the LLM
+    # Get existing history
+    raw_history = get_history(session_id)
+    
+    # CRITICAL: Strip out the 'timestamp' key, Mistral only wants 'role' and 'content'
+    clean_history = [{"role": msg["role"], "content": msg["content"]} for msg in raw_history]
+    
+    # Construct final messages list: System Prompt + History + New User Message
+    messages_to_send = [
+        {"role": "system", "content": system_prompt}
+    ] + clean_history + [
+        {"role": "user", "content": request.message}
+    ]
+
+    # 5. Call the LLM Service
+    ai_response_text = await generate_llm_response(
+        messages=messages_to_send,
+        temperature=persona_config["default_temperature"],
+        max_tokens=MAX_TOKENS
+    )
+
+    # 6. Save to Session History
+    add_message(session_id, role="user", content=request.message)
+    add_message(session_id, role="assistant", content=ai_response_text)
+
+    # 7. Return the Final Response
     return ChatResponse(
-        response=f"This is a dummy response for persona: {persona_id}. Your message was: '{request.message}'",
+        response=ai_response_text,
         persona_used=persona_id,
-        session_id=request.session_id
+        session_id=session_id
     )

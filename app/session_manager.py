@@ -43,3 +43,18 @@ def cleanup_old_sessions(max_age_hours: int = 1) -> None:
         
         if age > timedelta(hours=max_age_hours):
             del SESSIONS[session_id] # Remove the expired session
+
+def get_or_create_session(session_id: str, persona_name: str) -> str:
+    """
+    Returns the session_id. If it doesn't exist, creates it.
+    """
+    if session_id in SESSIONS:
+        return session_id
+    
+    # If it's a new session, we create it and force the ID to match the user's request
+    SESSIONS[session_id] = {
+        "persona_name": persona_name,
+        "messages": [],
+        "created_at": datetime.now()
+    }
+    return session_id

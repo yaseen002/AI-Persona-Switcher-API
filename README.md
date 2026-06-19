@@ -1,19 +1,28 @@
-# AI Persona Switcher API
-A FastAPI service to dynamically switch between AI personas with isolated conversation history, configurable temperature, and strict prompt control with Session-based conversation history (store in memory dictionary)
+# 🤖 AI Persona Switcher API
 
-User → FastAPI Endpoint → Persona System Prompt → LLM API → Response → Session History
+A production-style FastAPI backend that allows users to dynamically switch between different AI personas. Each persona has distinct behavior, tone, and knowledge restrictions, demonstrating professional LLM API integration, prompt engineering, and session-based state management.
+
+## 🌟 Features
+- **Multi-Persona Support**: Strict Legal Assistant, Medical Advisor, Code Reviewer, and Custom personas.
+- **Stateful Conversations**: In-memory session management allows for multi-turn context-aware chats.
+- **Strict Data Validation**: Pydantic models ensure all incoming and outgoing data is strictly typed and validated.
+- **Secure Configuration**: Environment variables (`.env`) used for all API keys and sensitive configurations.
+- **Production-Ready Architecture**: Separation of concerns (Routes, Services, Models, Session Management).
+
+## 🛠️ Tech Stack
+- **Backend**: FastAPI (Python 3.11+)
+- **LLM Provider**: Mistral AI API (via HTTPX Async Client)
+- **Data Validation**: Pydantic v2
+- **Containerization**: Docker & Docker Compose
 
 ## 🚀 Quick Start
-1. `cp .env.example .env`
-2. Add your `GEMINI_API_KEY` to `.env`
-3. `docker-compose up --build`
-4. Visit `http://localhost:8000/docs`
 
-## 🧪 Test with cURL
+### Prerequisites
+- Python 3.11+ (for local development)
+- Docker & Docker Compose (for containerized deployment)
+- A free Mistral AI API key (or OpenAI/Gemini)
+
+### 1. Clone and Setup
 ```bash
-curl -X POST "http://localhost:8000/chat/legal-assistant" \
-     -H "Content-Type: application/json" \
-     -d '{"message": "What is a force majeure clause?"}'
-```
-
-```
+git clone https://github.com/yaseen002/AI-Persona-Switcher-API
+cd ai-persona-switcher
